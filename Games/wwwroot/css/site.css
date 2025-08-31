@@ -1,0 +1,115 @@
+/* Базовые настройки */
+:root {
+    --dark: #1a1a2e;
+    --primary: #4ecca3;
+    --secondary: #393e46;
+    --accent: #f05454;
+    --light: #eeeeee;
+}
+
+body {
+    background-color: var(--dark);
+    color: var(--light);
+    font-family: 'Rajdhani', 'Orbitron', 'Segoe UI', sans-serif;
+    line-height: 1.6;
+}
+
+/* Шрифты (добавьте в <head>) */
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Orbitron:wght@500&display=swap');
+
+/* Кнопки */
+.btn {
+    border: none;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    color: var(--dark);
+}
+
+.btn-outline-primary {
+    border: 2px solid var(--primary);
+    color: var(--primary);
+}
+
+/* Карточки игр */
+.game-card {
+    background: linear-gradient(145deg, #232331, #1e1e2a);
+    border: 1px solid #2d2d3a;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+    .game-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+        border-color: var(--primary);
+    }
+
+    .game-card .card-body {
+        padding: 1.5rem;
+    }
+
+    .game-card .card-title {
+        font-family: 'Orbitron', sans-serif;
+        color: var(--primary);
+        font-size: 1.4rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .game-card .card-subtitle {
+        color: var(--accent) !important;
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 700;
+    }
+
+/* Хедер */
+header {
+    background: rgba(26, 26, 46, 0.9);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--primary);
+}
+
+    header .logo {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 1.8rem;
+        background: linear-gradient(to right, var(--primary), var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 0 10px rgba(78, 204, 163, 0.3);
+    }
+
+/* Анимации */
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(78, 204, 163, 0.7);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(78, 204, 163, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(78, 204, 163, 0);
+    }
+}
+
+.pulse-effect {
+    animation: pulse 2s infinite;
+}
+
+/* Эффекты неона */
+.neon-text {
+    text-shadow: 0 0 5px var(--primary), 0 0 10px var(--primary);
+}
+
+/* Адаптивные правки */
+@media (max-width: 768px) {
+    .game-card {
+        margin-bottom: 1.5rem;
+    }
+}

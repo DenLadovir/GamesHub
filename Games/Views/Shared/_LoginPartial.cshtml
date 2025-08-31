@@ -1,0 +1,56 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
+@{
+    IdentityUser? user = null;
+    IList<string> roles = new List<string>();
+
+    if (SignInManager.IsSignedIn(User))
+    {
+        user = await UserManager.GetUserAsync(User);
+        if (user != null)
+        {
+            roles = await UserManager.GetRolesAsync(user);
+        }
+    }
+
+    var rolesText = roles.Any() ? string.Join(", ", roles) : "Нет роли";
+    var isAdmin = roles.Contains("Admin");
+    var isModerator = roles.Contains("Moderator");
+}
+
+<ul class="navbar-nav">
+    @if (user != null)
+    {
+        <li class="nav-item">
+            <span class="nav-link text-dark">
+                Привет, @UserManager.GetUserName(User)! (Роль: @rolesText)
+            </span>
+        </li>
+
+        @* Ссылка только для админа *@
+        @if (isAdmin || isModerator)
+        {
+            <li class="nav-item">
+                <a class="nav-link text-dark" asp-controller="Games" asp-action="AddGame">Добавить игру</a>
+            </li>
+            <li class="nav-item">
+                <a asp-controller="Genres" asp-action="Create" class="btn btn-accent ms-2">Добавить жанр</a>
+            </li>
+        }
+
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Logout">Выйти</a>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Войти</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">Регистрация</a>
+        </li>
+    }
+</ul>

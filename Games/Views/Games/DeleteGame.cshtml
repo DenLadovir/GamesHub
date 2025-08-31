@@ -1,0 +1,60 @@
+﻿@model Games.Models.Game
+@{
+    ViewData["Title"] = "Удаление игры";
+}
+
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-danger text-white">
+            <h3 class="card-title">
+                <i class="bi bi-exclamation-triangle"></i> Удаление игры
+            </h3>
+        </div>
+
+        <div class="card-body">
+            <h4>Вы уверены, что хотите удалить эту игру?</h4>
+
+            <div class="alert alert-warning mt-3">
+                <h5><i class="bi bi-exclamation-circle"></i> Внимание!</h5>
+                <p>
+                    Игра <strong>@Model.Title</strong> (ID: @Model.Id) будет удалена безвозвратно!
+                </p>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h5>Информация об игре:</h5>
+                            <p>
+                                <strong>Жанры:</strong>
+                                @if (Model.GameGenres != null && Model.GameGenres.Any())
+                                {
+                                    @string.Join(", ", Model.GameGenres.Select(gg => gg.Genre?.Name ?? "Неизвестно"))
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Жанры не указаны</span>
+                                }
+                            </p>
+                            <p><strong>Дата выхода:</strong> @Model.ReleaseDate.ToShortDateString()</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <form asp-action="DeleteGameConfirmed" asp-route-id="@Model.Id" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <a asp-action="ViewGame" asp-route-id="@Model.Id" class="btn btn-secondary me-md-2">
+                        <i class="bi bi-arrow-left"></i> Отмена
+                    </a>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Подтвердить удаление
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

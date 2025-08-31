@@ -1,0 +1,18 @@
+﻿@using Microsoft.AspNetCore.Identity;
+@model IEnumerable<IdentityRole>
+
+<h2>Список ролей</h2>
+
+<table class="table mb-3">
+    <tr>
+        <th>Имя роли</th>
+    </tr>
+    @foreach (var role in Model)
+    {
+        <tr>
+            <td>@role.Name</td>
+        </tr>
+    }
+</table>
+
+<a asp-action="Index" asp-controller="Admin" class="btn btn-secondary">Назад</a>

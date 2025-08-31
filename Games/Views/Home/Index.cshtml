@@ -1,0 +1,210 @@
+﻿@model Games.Models.GameFilterViewModel
+@{
+    ViewData["Title"] = "GAME HUB | Каталог";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <h1 class="display-4 neon-text">GAME <span class="text-accent">HUB</span></h1>
+
+        <!-- 🔽 Кнопка админ панели (только для админов) -->
+        @if (User.IsInRole("Admin"))
+        {
+            <a asp-controller="Admin" asp-action="Index" class="btn btn-danger">
+                <i class="bi bi-shield-lock"></i> Админ панель
+            </a>
+        }
+    </div>
+
+    <!-- 🔽 Кнопки для управления видимостью -->
+    <div class="d-flex gap-2 mb-3">
+        <button class="btn btn-outline-accent" type="button" data-bs-toggle="collapse" data-bs-target="#searchForm" aria-expanded="true">
+            <i class="bi bi-search"></i> Поиск
+        </button>
+        <button class="btn btn-outline-accent" type="button" data-bs-toggle="collapse" data-bs-target="#genresCollapse" aria-expanded="true">
+            <i class="bi bi-tags"></i> Жанры
+        </button>
+    </div>
+
+    <!-- 🔽 Форма фильтрации -->
+    <form method="get" asp-action="Index">
+        <div class="row mb-4 collapse show" id="searchForm">
+            <div class="col-md-4 mb-3 mb-md-0">
+                <input asp-for="Title" class="form-control" placeholder="Название игры" />
+            </div>
+
+            <div class="col-md-2 mb-3 mb-md-0">
+                <input asp-for="Year" class="form-control" placeholder="Год" />
+            </div>
+
+            <div class="col-md-2 d-flex align-items-center">
+                <div class="form-check me-2">
+                    <input asp-for="UpcomingOnly" class="form-check-input" />
+                    <label class="form-check-label" for="UpcomingOnly">Только невышедшие</label>
+                </div>
+                <button type="submit" class="btn btn-accent w-100">Фильтровать</button>
+            </div>
+        </div>
+
+        <!-- 🔽 Блок жанров с collapse -->
+        <div class="collapse show" id="genresCollapse">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <label class="form-label">Жанры</label>
+                    <div class="d-flex flex-wrap gap-2">
+                        @foreach (var genre in Model.AllGenres)
+                        {
+                            <div class="form-check">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       name="selectedGenreIds"
+                                       value="@genre.Id"
+                                       @(Model.SelectedGenreIds.Contains(genre.Id) ? "checked" : "") />
+                                <label class="form-check-label">@genre.Name</label>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <hr />
+
+    <!-- 🔽 Список игр -->
+    @if (Model.Games.Any())
+    {
+        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+            @foreach (var game in Model.Games)
+            {
+                <div class="col">
+                    <div class="game-card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <h5 class="card-title mb-0">@game.Title</h5>
+                            </div>
+
+                            <h6 class="card-subtitle mb-3">
+                                @if (game.GameGenres != null && game.GameGenres.Any())
+                                {
+                                    @string.Join(", ", game.GameGenres.Select(gg => gg.Genre?.Name ?? "Неизвестно"))
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Жанры не указаны</span>
+                                }
+                            </h6>
+
+                            <p class="card-text text-muted mb-4">@game.Description</p>
+
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-accent">@game.ReleaseDate.ToString("dd.MM.yyyy")</small>
+                                <a asp-controller="Games" asp-action="ViewGame" asp-route-id="@game.Id"
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-joystick"></i> ИГРАТЬ
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-dark border-accent">
+            <h4 class="alert-heading text-accent">Каталог пуст!</h4>
+            <p>Нет игр по заданным параметрам.</p>
+        </div>
+    }
+</div>
+
+@section Styles {
+    <style>
+        .text-accent {
+            color: var(--accent) !important;
+        }
+
+        .btn-accent {
+            background-color: var(--accent);
+            color: var(--dark);
+            font-weight: bold;
+        }
+
+        .btn-outline-accent {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+            .btn-outline-accent:hover {
+                background-color: var(--accent);
+                color: var(--dark);
+            }
+
+        .border-accent {
+            border-color: var(--accent) !important;
+        }
+
+        .game-card {
+            border: 1px solid var(--accent);
+            border-radius: 0.5rem;
+            transition: transform 0.2s;
+        }
+
+            .game-card:hover {
+                transform: translateY(-5px);
+            }
+
+        .form-check {
+            margin-right: 10px;
+        }
+
+        /* Анимация для collapse */
+        .collapse {
+            transition: all 0.3s ease;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        // Сохраняем состояние collapse в localStorage
+        document.addEventListener('DOMContentLoaded', function() {
+            // Восстанавливаем состояние поиска
+            const searchState = localStorage.getItem('searchFormCollapsed');
+            if (searchState === 'true') {
+                const searchForm = document.getElementById('searchForm');
+                if (searchForm) searchForm.classList.remove('show');
+            }
+
+            // Восстанавливаем состояние жанров
+            const genresState = localStorage.getItem('genresCollapsed');
+            if (genresState === 'true') {
+                const genresCollapse = document.getElementById('genresCollapse');
+                if (genresCollapse) genresCollapse.classList.remove('show');
+            }
+
+            // Обработчики для сохранения состояния
+            const searchCollapse = document.getElementById('searchForm');
+            const genresCollapse = document.getElementById('genresCollapse');
+
+            if (searchCollapse) {
+                searchCollapse.addEventListener('hidden.bs.collapse', function() {
+                    localStorage.setItem('searchFormCollapsed', 'true');
+                });
+                searchCollapse.addEventListener('shown.bs.collapse', function() {
+                    localStorage.setItem('searchFormCollapsed', 'false');
+                });
+            }
+
+            if (genresCollapse) {
+                genresCollapse.addEventListener('hidden.bs.collapse', function() {
+                    localStorage.setItem('genresCollapsed', 'true');
+                });
+                genresCollapse.addEventListener('shown.bs.collapse', function() {
+                    localStorage.setItem('genresCollapsed', 'false');
+                });
+            }
+        });
+    </script>
+}
