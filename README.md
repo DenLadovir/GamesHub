@@ -16,7 +16,6 @@
 - **C#**, **ASP.NET Core**  
 - **Entity Framework Core**  
 - **PostgreSQL**  
-- **Docker**  
 - **REST API**  
 
 ---
@@ -39,5 +38,4 @@ It provides functionality for searching, filtering, and managing games, along wi
 - **C#**, **ASP.NET Core**  
 - **Entity Framework Core**  
 - **PostgreSQL**  
-- **Docker**  
 - **REST API**  
