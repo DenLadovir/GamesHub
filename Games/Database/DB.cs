@@ -31,10 +31,10 @@ namespace Games.Database
                     .IsRequired();
 
                 entity.Property(g => g.ReleaseDate)
-                .HasColumnType("timestamp with time zone") // Изменяем на тип с временной зоной
+                .HasColumnType("timestamp with time zone")
                 .HasConversion(
-                    v => v.ToUniversalTime(), // При сохранении преобразуем в UTC
-                    v => DateTime.SpecifyKind(v, DateTimeKind.Utc)); // При чтении указываем UTC
+                    v => v.ToUniversalTime(),
+                    v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
             });
 
             modelBuilder.Entity<Genre>(entity =>

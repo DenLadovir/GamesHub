@@ -23,7 +23,6 @@ public class GamesApiController : ControllerBase
         return await _db.Games.ToListAsync();
     }
 
-    // API: Получение конкретной игры
     [HttpGet("{id}")]
     public async Task<ActionResult<Game>> GetGame(int id)
     {
@@ -35,7 +34,6 @@ public class GamesApiController : ControllerBase
         return game;
     }
 
-    // API: Создание игры
     [HttpPost]
     public async Task<ActionResult<Game>> CreateGame([FromBody] Game game)
     {

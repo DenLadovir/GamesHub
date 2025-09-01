@@ -14,14 +14,12 @@ public class AdminController : Controller
         _roleManager = roleManager;
     }
 
-    // 🔹 Список пользователей
     public IActionResult Index()
     {
         var users = _userManager.Users.ToList();
         return View(users);
     }
 
-    // 🔹 Список ролей
     public IActionResult ListRoles()
     {
         var roles = _roleManager.Roles.ToList();
@@ -79,7 +77,6 @@ public class AdminController : Controller
         return RedirectToAction("Index");
     }
 
-    // 🔹 Редактирование ролей
     public async Task<IActionResult> EditRoles(string userId)
     {
         var user = await _userManager.FindByIdAsync(userId);
@@ -117,7 +114,6 @@ public class AdminController : Controller
         return RedirectToAction("Index");
     }
 
-    // 🔹 Смена пароля
     public async Task<IActionResult> ChangePassword(string userId)
     {
         var user = await _userManager.FindByIdAsync(userId);
@@ -158,19 +154,3 @@ public class AdminController : Controller
         return RedirectToAction("Index");
     }
 }
-
-//public class AdminController : Controller
-//{
-//    private readonly RoleManager<IdentityRole> _roleManager;
-
-//    public AdminController(RoleManager<IdentityRole> roleManager)
-//    {
-//        _roleManager = roleManager;
-//    }
-
-//    public IActionResult ListRoles()
-//    {
-//        var roles = _roleManager.Roles.ToList(); // Получаем все роли
-//        return View(roles); // Можно передать в представление
-//    }
-//}

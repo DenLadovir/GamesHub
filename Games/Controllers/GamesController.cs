@@ -17,7 +17,6 @@ public class GamesController : Controller
         _db = db;
     }
 
-    // Просмотр игры
     [HttpGet("{id}")]
     public async Task<IActionResult> ViewGame(int id)
     {
@@ -30,7 +29,6 @@ public class GamesController : Controller
         return View(game);
     }
 
-    // Добавление игры - GET
     [HttpGet("AddGame")]
     [Authorize(Policy = "ModeratorOrAdmin")]
     public async Task<IActionResult> AddGame()
@@ -39,13 +37,12 @@ public class GamesController : Controller
 
         var model = new Game
         {
-            SelectedGenreIds = new List<int>() // пустой список жанров
+            SelectedGenreIds = new List<int>()
         };
 
         return View(model);
     }
 
-    // Добавление игры - POST
     [HttpPost("AddGame")]
     [Authorize(Policy = "ModeratorOrAdmin")]
     public async Task<IActionResult> AddGame(Game game, int[] selectedGenres)
@@ -69,7 +66,6 @@ public class GamesController : Controller
         return View(game);
     }
 
-    // Добавление жанра
     [HttpGet("AddGenre")]
     [Authorize(Policy = "ModeratorOrAdmin")]
     public IActionResult AddGenre() => View();
@@ -87,7 +83,6 @@ public class GamesController : Controller
         return View(genre);
     }
 
-    // Редактирование игры - GET
     [HttpGet("Edit/{id}")]
     [Authorize(Policy = "ModeratorOrAdmin")]
     public async Task<IActionResult> EditGame(int id)
@@ -104,7 +99,6 @@ public class GamesController : Controller
         return View(game);
     }
 
-    // Редактирование игры - POST
     [HttpPost("Edit/{id}")]
     [Authorize(Policy = "ModeratorOrAdmin")]
     public async Task<IActionResult> EditGame(int id, Game updatedGame, int[] selectedGenres)
@@ -125,7 +119,6 @@ public class GamesController : Controller
                 updatedGame.ReleaseDate == default ? DateTime.Today : updatedGame.ReleaseDate,
                 DateTimeKind.Utc);
 
-            // Обновляем жанры
             _db.Set<GameGenre>().RemoveRange(game.GameGenres);
             await _db.SaveChangesAsync();
 
@@ -139,7 +132,6 @@ public class GamesController : Controller
         return View(updatedGame);
     }
 
-    // Удаление игры - GET
     [HttpGet("Delete/{id}")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteGame(int id)
@@ -158,7 +150,6 @@ public class GamesController : Controller
         return View(game);
     }
 
-    // Удаление игры - POST
     [HttpPost("Delete/{id}")]
     [ValidateAntiForgeryToken]
     [Authorize(Roles = "Admin")]
@@ -180,25 +171,18 @@ public class GamesController : Controller
                 .ThenInclude(gg => gg.Genre)
             .AsQueryable();
 
-        // Фильтрация по названию
         if (!string.IsNullOrEmpty(filter.Title))
         {
             query = query.Where(g => g.Title.Contains(filter.Title));
         }
 
-        // Фильтрация по жанрам
         if (filter.SelectedGenreIds != null && filter.SelectedGenreIds.Count > 0)
         {
             query = query.Where(g => g.GameGenres.Any(gg => filter.SelectedGenreIds.Contains(gg.GenreId)));
         }
 
-        // Фильтрация по году
         if (filter.Year.HasValue)
         {
-            //var startDate = new DateTime(filter.Year.Value, 1, 1);
-            //var endDate = startDate.AddYears(1);
-
-            //query = query.Where(g => g.ReleaseDate >= startDate && g.ReleaseDate < endDate);
             query = query.Where(g => g.ReleaseDate.Year == filter.Year.Value);
         }
 

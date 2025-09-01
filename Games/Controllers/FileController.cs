@@ -76,11 +76,11 @@ public class FileController : Controller
         {
             Delimiter = "\t",
             HasHeaderRecord = true,
-            HeaderValidated = null, // Игнорируем проверку заголовков
-            MissingFieldFound = null, // Игнорируем отсутствующие поля
+            HeaderValidated = null,
+            MissingFieldFound = null,
             Mode = CsvMode.Escape,
             Escape = '"',
-            TrimOptions = TrimOptions.Trim // Обрезаем пробелы
+            TrimOptions = TrimOptions.Trim
         };
 
         using var stream = new StreamReader(file.OpenReadStream());
@@ -166,11 +166,11 @@ public class FileController : Controller
         {
             Delimiter = "\t",
             HasHeaderRecord = true,
-            HeaderValidated = null, // Игнорируем проверку заголовков
-            MissingFieldFound = null, // Игнорируем отсутствующие поля
+            HeaderValidated = null,
+            MissingFieldFound = null,
             Mode = CsvMode.Escape,
             Escape = '"',
-            TrimOptions = TrimOptions.Trim // Обрезаем пробелы
+            TrimOptions = TrimOptions.Trim
         };
 
         using StreamReader stream = new StreamReader(file.OpenReadStream());
@@ -209,7 +209,7 @@ public sealed class GameMap : ClassMap<Game>
     {
         Map(m => m.Title).Name("Title");
         Map(m => m.Description).Name("Description");
-        Map(m => m.ReleaseDate).Name("ReleaseDate"); // Убедитесь, что нет пробела
-        Map(m => m.Id).Ignore(); // Игнорируем свойство Id, так как его нет в CSV
+        Map(m => m.ReleaseDate).Name("ReleaseDate");
+        Map(m => m.Id).Ignore();
     }
 }

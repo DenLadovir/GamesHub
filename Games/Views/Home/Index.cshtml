@@ -7,7 +7,6 @@
     <div class="d-flex justify-content-between align-items-center mb-5">
         <h1 class="display-4 neon-text">GAME <span class="text-accent">HUB</span></h1>
 
-        <!-- 🔽 Кнопка админ панели (только для админов) -->
         @if (User.IsInRole("Admin"))
         {
             <a asp-controller="Admin" asp-action="Index" class="btn btn-danger">
@@ -16,7 +15,6 @@
         }
     </div>
 
-    <!-- 🔽 Кнопки для управления видимостью -->
     <div class="d-flex gap-2 mb-3">
         <button class="btn btn-outline-accent" type="button" data-bs-toggle="collapse" data-bs-target="#searchForm" aria-expanded="true">
             <i class="bi bi-search"></i> Поиск
@@ -26,7 +24,6 @@
         </button>
     </div>
 
-    <!-- 🔽 Форма фильтрации -->
     <form method="get" asp-action="Index">
         <div class="row mb-4 collapse show" id="searchForm">
             <div class="col-md-4 mb-3 mb-md-0">
@@ -46,7 +43,6 @@
             </div>
         </div>
 
-        <!-- 🔽 Блок жанров с collapse -->
         <div class="collapse show" id="genresCollapse">
             <div class="row mb-4">
                 <div class="col-12">
@@ -71,7 +67,6 @@
 
     <hr />
 
-    <!-- 🔽 Список игр -->
     @if (Model.Games.Any())
     {
         <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
@@ -159,7 +154,6 @@
             margin-right: 10px;
         }
 
-        /* Анимация для collapse */
         .collapse {
             transition: all 0.3s ease;
         }
@@ -168,23 +162,19 @@
 
 @section Scripts {
     <script>
-        // Сохраняем состояние collapse в localStorage
         document.addEventListener('DOMContentLoaded', function() {
-            // Восстанавливаем состояние поиска
             const searchState = localStorage.getItem('searchFormCollapsed');
             if (searchState === 'true') {
                 const searchForm = document.getElementById('searchForm');
                 if (searchForm) searchForm.classList.remove('show');
             }
 
-            // Восстанавливаем состояние жанров
             const genresState = localStorage.getItem('genresCollapsed');
             if (genresState === 'true') {
                 const genresCollapse = document.getElementById('genresCollapse');
                 if (genresCollapse) genresCollapse.classList.remove('show');
             }
 
-            // Обработчики для сохранения состояния
             const searchCollapse = document.getElementById('searchForm');
             const genresCollapse = document.getElementById('genresCollapse');
 
