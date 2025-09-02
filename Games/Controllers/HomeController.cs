@@ -1,71 +1,42 @@
-﻿using System.Diagnostics;
-using Games.Database;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading.Tasks;
+using Games.Application.Queries;
 using Games.Models;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
-using Microsoft.EntityFrameworkCore;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
-
-namespace Games.Controllers
+public class HomeController : Controller
 {
-    public class HomeController : Controller
+    private readonly IMediator _mediator;
+
+    public HomeController(IMediator mediator)
     {
-        private readonly AppDbContext _db;
+        _mediator = mediator;
+    }
 
-        public HomeController(AppDbContext db)
+    public async Task<IActionResult> Index(string? title, int[]? selectedGenreIds, int? year, bool upcomingOnly)
+    {
+        var filter = new GameFilterViewModel
         {
-            _db = db;
-        }
-        public async Task<IActionResult> Index(string? title, int[]? selectedGenreIds, int? year, bool upcomingOnly)
-        {
-            var query = _db.Games
-                .Include(g => g.GameGenres)
-                    .ThenInclude(gg => gg.Genre)
-                .AsQueryable();
+            Title = title,
+            Year = year,
+            SelectedGenreIds = selectedGenreIds?.ToList() ?? new List<int>(),
+            UpcomingOnly = upcomingOnly
+        };
 
-            if (!string.IsNullOrEmpty(title))
-            {
-                string lowerTitle = title.ToLower();
-                query = query.Where(g => g.Title.ToLower().Contains(lowerTitle));
-            }
+        var model = await _mediator.Send(new FilterGamesQuery(filter));
+        return View(model);
+    }
 
-            if (selectedGenreIds != null && selectedGenreIds.Any())
-            {
-                query = query.Where(g => g.GameGenres.Any(gg => selectedGenreIds.Contains(gg.GenreId)));
-            }
+    public IActionResult Feedback()
+    {
+        return View();
+    }
 
-            if (year.HasValue)
-            {
-                query = query.Where(g => g.ReleaseDate.Year == year.Value);
-            }
-
-            if (upcomingOnly)
-            {
-                query = query.Where(g => g.ReleaseDate > DateTime.UtcNow);
-            }
-
-            var model = new GameFilterViewModel
-            {
-                Title = title,
-                Year = year,
-                SelectedGenreIds = selectedGenreIds?.ToList() ?? new List<int>(),
-                UpcomingOnly = upcomingOnly,
-                AllGenres = await _db.Genres.ToListAsync(),
-                Games = await query.ToListAsync()
-            };
-
-            return View(model);
-        }
-
-        public IActionResult Feedback()
-        {
-            return View();
-        }
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+    public IActionResult Error()
+    {
+        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
 }

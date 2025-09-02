@@ -1,30 +1,23 @@
-﻿using Games.Controllers;
-using Games.Database;
+﻿using Games.Application.Queries;
 using Games.Models;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 [Route("Games")]
 public class GamesController : Controller
 {
-    private readonly ILogger<GamesController> _logger;
-    private readonly AppDbContext _db;
+    private readonly IMediator _mediator;
 
-    public GamesController(ILogger<GamesController> logger, AppDbContext db)
+    public GamesController(IMediator mediator)
     {
-        _logger = logger;
-        _db = db;
+        _mediator = mediator;
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> ViewGame(int id)
     {
-        var game = await _db.Games
-            .Include(g => g.GameGenres)
-                .ThenInclude(gg => gg.Genre)
-            .FirstOrDefaultAsync(g => g.Id == id);
-
+        var game = await _mediator.Send(new GetGameByIdQuery(id));
         if (game == null) return NotFound();
         return View(game);
     }
@@ -33,7 +26,7 @@ public class GamesController : Controller
     [Authorize(Policy = "ModeratorOrAdmin")]
     public async Task<IActionResult> AddGame()
     {
-        await LoadGenresToViewBag();
+        ViewBag.AllGenres = await _mediator.Send(new GetAllGenresQuery());
 
         var model = new Game
         {
@@ -47,23 +40,14 @@ public class GamesController : Controller
     [Authorize(Policy = "ModeratorOrAdmin")]
     public async Task<IActionResult> AddGame(Game game, int[] selectedGenres)
     {
-        if (ModelState.IsValid)
+        if (!ModelState.IsValid)
         {
-            game.ReleaseDate = DateTime.SpecifyKind(
-                game.ReleaseDate == default ? DateTime.Today : game.ReleaseDate,
-                DateTimeKind.Utc);
-
-            _db.Games.Add(game);
-            await _db.SaveChangesAsync();
-
-            await SaveGameGenres(game.Id, selectedGenres);
-
-            return RedirectToAction("ViewGame", new { id = game.Id });
+            ViewBag.AllGenres = await _mediator.Send(new GetAllGenresQuery());
+            return View(game);
         }
 
-        await LoadGenresToViewBag();
-        game.SelectedGenreIds = selectedGenres?.ToList() ?? new List<int>();
-        return View(game);
+        var newGame = await _mediator.Send(new AddGameCommand(game, selectedGenres));
+        return RedirectToAction("ViewGame", new { id = newGame.Id });
     }
 
     [HttpGet("AddGenre")]
@@ -74,28 +58,20 @@ public class GamesController : Controller
     [Authorize(Policy = "ModeratorOrAdmin")]
     public async Task<IActionResult> AddGenre(Genre genre)
     {
-        if (ModelState.IsValid)
-        {
-            _db.Genres.Add(genre);
-            await _db.SaveChangesAsync();
-            return RedirectToAction("Index", "Home");
-        }
-        return View(genre);
+        if (!ModelState.IsValid) return View(genre);
+
+        await _mediator.Send(new AddGenreCommand(genre));
+        return RedirectToAction("Index", "Home");
     }
 
     [HttpGet("Edit/{id}")]
     [Authorize(Policy = "ModeratorOrAdmin")]
     public async Task<IActionResult> EditGame(int id)
     {
-        var game = await _db.Games
-            .Include(g => g.GameGenres)
-                .ThenInclude(gg => gg.Genre)
-            .FirstOrDefaultAsync(g => g.Id == id);
-
+        var game = await _mediator.Send(new GetGameByIdQuery(id));
         if (game == null) return NotFound();
 
-        game.SelectedGenreIds = game.GameGenres.Select(gg => gg.GenreId).ToList();
-        await LoadGenresToViewBag();
+        ViewBag.AllGenres = await _mediator.Send(new GetAllGenresQuery());
         return View(game);
     }
 
@@ -103,49 +79,24 @@ public class GamesController : Controller
     [Authorize(Policy = "ModeratorOrAdmin")]
     public async Task<IActionResult> EditGame(int id, Game updatedGame, int[] selectedGenres)
     {
-        if (id != updatedGame.Id) return NotFound();
-
-        if (ModelState.IsValid)
+        if (!ModelState.IsValid)
         {
-            var game = await _db.Games
-                .Include(g => g.GameGenres)
-                .FirstOrDefaultAsync(g => g.Id == id);
-
-            if (game == null) return NotFound();
-
-            game.Title = updatedGame.Title;
-            game.Description = updatedGame.Description;
-            game.ReleaseDate = DateTime.SpecifyKind(
-                updatedGame.ReleaseDate == default ? DateTime.Today : updatedGame.ReleaseDate,
-                DateTimeKind.Utc);
-
-            _db.Set<GameGenre>().RemoveRange(game.GameGenres);
-            await _db.SaveChangesAsync();
-
-            await SaveGameGenres(game.Id, selectedGenres);
-
-            return RedirectToAction("ViewGame", new { id = game.Id });
+            ViewBag.AllGenres = await _mediator.Send(new GetAllGenresQuery());
+            return View(updatedGame);
         }
 
-        await LoadGenresToViewBag();
-        updatedGame.SelectedGenreIds = selectedGenres?.ToList() ?? new List<int>();
-        return View(updatedGame);
+        var result = await _mediator.Send(new EditGameCommand(id, updatedGame, selectedGenres));
+        if (result == null) return NotFound();
+
+        return RedirectToAction("ViewGame", new { id = result.Id });
     }
 
     [HttpGet("Delete/{id}")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteGame(int id)
     {
-        var game = await _db.Games
-            .Include(g => g.GameGenres)
-                .ThenInclude(gg => gg.Genre)
-            .FirstOrDefaultAsync(g => g.Id == id);
-
-        if (game == null)
-        {
-            _logger.LogWarning($"Игра с ID {id} не найдена");
-            return NotFound();
-        }
+        var game = await _mediator.Send(new GetGameByIdQuery(id));
+        if (game == null) return NotFound();
 
         return View(game);
     }
@@ -155,66 +106,16 @@ public class GamesController : Controller
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteGameConfirmed(int id)
     {
-        var game = await _db.Games.FindAsync(id);
-        if (game == null) return NotFound();
+        var result = await _mediator.Send(new DeleteGameCommand(id));
+        if (!result) return NotFound();
 
-        _db.Games.Remove(game);
-        await _db.SaveChangesAsync();
         return RedirectToAction("Index", "Home");
     }
 
     [HttpGet("Filter")]
     public async Task<IActionResult> Filtering(GameFilterViewModel filter)
     {
-        var query = _db.Games
-            .Include(g => g.GameGenres)
-                .ThenInclude(gg => gg.Genre)
-            .AsQueryable();
-
-        if (!string.IsNullOrEmpty(filter.Title))
-        {
-            query = query.Where(g => g.Title.Contains(filter.Title));
-        }
-
-        if (filter.SelectedGenreIds != null && filter.SelectedGenreIds.Count > 0)
-        {
-            query = query.Where(g => g.GameGenres.Any(gg => filter.SelectedGenreIds.Contains(gg.GenreId)));
-        }
-
-        if (filter.Year.HasValue)
-        {
-            query = query.Where(g => g.ReleaseDate.Year == filter.Year.Value);
-        }
-
-        filter.Games = await query.ToListAsync();
-        filter.AllGenres = await _db.Genres.ToListAsync();
-
-        return View(filter);
+        var result = await _mediator.Send(new FilterGamesQuery(filter));
+        return View(result);
     }
-
-    #region Вспомогательные методы
-
-    private async Task LoadGenresToViewBag()
-    {
-        ViewBag.AllGenres = await _db.Genres.ToListAsync();
-    }
-
-    private async Task SaveGameGenres(int gameId, int[] selectedGenres)
-    {
-        if (selectedGenres == null || selectedGenres.Length == 0) return;
-
-        var genres = await _db.Genres.Where(g => selectedGenres.Contains(g.Id)).ToListAsync();
-        foreach (var genre in genres)
-        {
-            _db.Set<GameGenre>().Add(new GameGenre
-            {
-                GameId = gameId,
-                GenreId = genre.Id
-            });
-        }
-
-        await _db.SaveChangesAsync();
-    }
-
-    #endregion
 }

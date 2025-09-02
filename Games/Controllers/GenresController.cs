@@ -1,34 +1,38 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Games.Models;
-using Games.Database;
+﻿using Games.Models;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace Games.Controllers
 {
     public class GenresController : Controller
     {
-        private readonly AppDbContext _context;
+        private readonly IMediator _mediator;
 
-        public GenresController(AppDbContext context)
+        public GenresController(IMediator mediator)
         {
-            _context = context;
+            _mediator = mediator;
         }
 
         [HttpGet]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            ViewBag.AllGenres = await _mediator.Send(new GetAllGenresQuery());
             return View();
         }
 
         [HttpPost]
-        public IActionResult Create(Genre genre)
+        public async Task<IActionResult> Create(Genre genre)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                _context.Genres.Add(genre);
-                _context.SaveChanges();
-                return RedirectToAction("Index", "Home");
+                ViewBag.AllGenres = await _mediator.Send(new GetAllGenresQuery());
+                return View(genre);
             }
-            return View(genre);
+
+            var addedGenre = await _mediator.Send(new AddGenreCommand(genre));
+            return RedirectToAction("Index", "Home");
         }
     }
 }

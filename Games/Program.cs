@@ -1,11 +1,10 @@
-using System;
-using System.Globalization;
+using System.Reflection;
 using Games.Database;
 using Games.Models;
 using Games.Services;
+using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 public class MainClass
 {
@@ -17,6 +16,7 @@ public class MainClass
         builder.Services.AddScoped<TelegramService>();
 
         builder.Services.AddControllersWithViews();
+
         builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSQLConnection")));
 
@@ -33,8 +33,15 @@ public class MainClass
         });
 
         builder.Services.AddRazorPages();
-        
+
+        builder.Services.AddMediatR(cfg =>
+        {
+            cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
+            cfg.RegisterServicesFromAssembly(typeof(AddGameHandler).Assembly);
+        });
+
         var app = builder.Build();
+
         app.MapRazorPages();
 
         using (var scope = app.Services.CreateScope())
