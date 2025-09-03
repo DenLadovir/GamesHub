@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Games.Constants;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -34,7 +35,7 @@ public class AdminController : Controller
     {
         if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
         {
-            ModelState.AddModelError("", "Email и пароль обязательны");
+            ModelState.AddModelError("", Messages.LoginAndPassRequired);
             return View();
         }
 
@@ -47,7 +48,7 @@ public class AdminController : Controller
             {
                 await _userManager.AddToRoleAsync(user, role);
             }
-            TempData["Success"] = $"Пользователь {email} создан";
+            TempData["Success"] = string.Format(Messages.UserCreated, email);
             return RedirectToAction("Index");
         }
 
@@ -62,16 +63,16 @@ public class AdminController : Controller
     public async Task<IActionResult> DeleteUser(string userId)
     {
         var user = await _userManager.FindByIdAsync(userId);
-        Console.WriteLine($"User for deleting{user.Id} {user.UserName}");
         if (user == null)
         {
-            TempData["Error"] = "Пользователь не найден";
+            TempData["Error"] = Messages.UserNotFound;
             return RedirectToAction("Index");
         }
+        Console.WriteLine(string.Format(Messages.DeletingMessage, user.Id, user.UserName));
 
         var result = await _userManager.DeleteAsync(user);
         TempData["Success"] = result.Succeeded
-            ? $"Пользователь {user.Email} удалён"
+            ? string.Format(Messages.UserDeleted, user.Email)
             : string.Join(", ", result.Errors.Select(e => e.Description));
 
         return RedirectToAction("Index");
@@ -110,7 +111,7 @@ public class AdminController : Controller
         await _userManager.AddToRolesAsync(user, addedRoles);
         await _userManager.RemoveFromRolesAsync(user, removedRoles);
 
-        TempData["Success"] = $"Роли пользователя {user.Email} обновлены";
+        TempData["Success"] = string.Format(Messages.UserRolesUpdated, user.Email);
         return RedirectToAction("Index");
     }
 
@@ -137,7 +138,7 @@ public class AdminController : Controller
         var user = await _userManager.FindByIdAsync(model.UserId);
         if (user == null)
         {
-            TempData["Error"] = "Пользователь не найден";
+            TempData["Error"] = Messages.UserNotFound;
             return RedirectToAction("Index");
         }
 
@@ -150,7 +151,7 @@ public class AdminController : Controller
             return View(model);
         }
 
-        TempData["Success"] = $"Пароль для {user.Email} успешно изменён";
+        TempData["Success"] = string.Format(Messages.PasswordChanged, user.Email);
         return RedirectToAction("Index");
     }
 }

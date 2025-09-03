@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Globalization;
+using Games.Constants;
 
 namespace Games.Models
 {
@@ -39,17 +40,17 @@ namespace Games.Models
         {
             if(value == null)
             {
-                return new ValidationResult("Значение не может быть null.");
+                return new ValidationResult(Messages.ValueCannotBeNull);
             }
 
             if(value is not string strValue)
             {
-                return new ValidationResult("Некорректный тип данных. Ожидается строка.");
+                return new ValidationResult(Messages.InvalidDataTypeStringExpected);
             }
 
             if(strValue.Length < _min || strValue.Length > _max)
             {
-                return new ValidationResult($"Длина должна быть от {_min} до {_max} символов.");
+                return new ValidationResult(string.Format(Messages.StringLengthRange, _min, _max));
             }
 
             return ValidationResult.Success;

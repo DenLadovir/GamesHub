@@ -4,6 +4,7 @@ using System.IO;
 using System.Text.Json;
 using CsvHelper;
 using CsvHelper.Configuration;
+using Games.Constants;
 using Games.Database;
 using Games.Models;
 using Microsoft.AspNetCore.Http;
@@ -25,7 +26,7 @@ public class FileController : Controller
     {
         if(file == null || file.Length == 0)
         {
-            TempData["Error"] = "Файл не загружен.";
+            TempData["Error"] = Messages.FileNotLoaded;
             return RedirectToAction("Index", "Admin");
         }
 
@@ -35,7 +36,7 @@ public class FileController : Controller
             var games = await JsonSerializer.DeserializeAsync<List<Game>>(stream);
             if (games == null || !games.Any())
             {
-                TempData["Error"] = "Не удалось распарсить JSON.";
+                TempData["Error"] = Messages.JsonParseError;
                 return RedirectToAction("Index", "Admin");
             }
 
@@ -46,19 +47,19 @@ public class FileController : Controller
 
             if (!newGames.Any())
             {
-                TempData["Error"] = "Все игры из файла уже существуют в базе.";
+                TempData["Error"] = Messages.GamesAlreadyExist;
                 return RedirectToAction("Index", "Admin");
             }
 
             _context.Games.AddRange(newGames);
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = $"Загружено {newGames.Count} игр.";
+            TempData["Success"] = string.Format(Messages.GamesUploaded, newGames.Count);
             return RedirectToAction("Index", "Admin");
         }
         catch (JsonException ex)
         {
-            TempData["Error"] = "Ошибка формата JSON: " + ex.Message;
+            TempData["Error"] = Messages.JsonFormatError + ex.Message;
             return RedirectToAction("Index", "Admin");
         }
     }
@@ -68,7 +69,7 @@ public class FileController : Controller
     {
         if(file == null || file.Length == 0)
         {
-            TempData["Error"] = "Файл не загружен.";
+            TempData["Error"] = Messages.FileNotLoaded;
             return RedirectToAction("Index", "Admin");
         }
 
@@ -95,24 +96,24 @@ public class FileController : Controller
 
             if (!newGames.Any())
             {
-                TempData["Error"] = "Не удалось распарсить CSV.";
+                TempData["Error"] = Messages.CsvParseError;
                 return RedirectToAction("Index", "Admin");
             }
 
             _context.Games.AddRange(newGames);
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = $"Загружено {newGames.Count} игр.";
+            TempData["Success"] = string.Format(Messages.GamesUploaded, newGames.Count);
             return RedirectToAction("Index", "Admin");
         }
         catch(CsvHelperException ex)
         {
-            TempData["Error"] = "Ошибка формата CSV: " + ex.Message;
+            TempData["Error"] = Messages.CsvFormatError + ex.Message;
             return RedirectToAction("Index", "Admin");
         }
         catch(Exception ex)
         {
-            TempData["Error"] = "Общая ошибка: " + ex.Message;
+            TempData["Error"] = Messages.GeneralError + ex.Message;
             return RedirectToAction("Index", "Admin");
         }
     }
@@ -122,7 +123,7 @@ public class FileController : Controller
     {
         if(file == null || file.Length == 0)
         {
-            TempData["Error"] = "Файл не загружен.";
+            TempData["Error"] = Messages.FileNotLoaded;
             return RedirectToAction("Index", "Admin");
         }
 
@@ -136,19 +137,19 @@ public class FileController : Controller
 
             if (!newGenres.Any())
             {
-                TempData["Error"] = "Не удалось распарсить JSON.";
+                TempData["Error"] = Messages.JsonParseError;
                 return RedirectToAction("Index", "Admin");
             }
 
             _context.Genres.AddRange(newGenres);
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = $"Загружено {newGenres.Count} жанров.";
+            TempData["Success"] = string.Format(Messages.GenresUploaded, newGenres.Count);
             return RedirectToAction("Index", "Admin");
         }
         catch (JsonException ex)
         {
-            TempData["Error"] = "Ошибка формата JSON: " + ex.Message;
+            TempData["Error"] = Messages.JsonFormatError + ex.Message;
             return RedirectToAction("Index", "Admin");
         }
     }
@@ -158,7 +159,7 @@ public class FileController : Controller
     {
         if (file == null || file.Length == 0)
         {
-            TempData["Error"] = "Файл не загружен.";
+            TempData["Error"] = Messages.FileNotLoaded;
             return RedirectToAction("Index", "Admin");
         }
 
@@ -185,19 +186,19 @@ public class FileController : Controller
 
             if (!newGenres.Any())
             {
-                TempData["Error"] = "Не удалось распарсить CSV.";
+                TempData["Error"] = Messages.CsvFormatError;
                 return RedirectToAction("Index", "Admin");
             }
 
             _context.Genres.AddRange(newGenres);
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = $"Загружено {newGenres.Count} жанров.";
+            TempData["Success"] = string.Format(Messages.GenresUploaded, newGenres.Count);
             return RedirectToAction("Index", "Admin");
         }
         catch(CsvHelperException ex)
         {
-            TempData["Error"] = "Ошибка формата CSV: " + ex.Message;
+            TempData["Error"] = Messages.CsvFormatError + ex.Message;
             return RedirectToAction("Index", "Admin");
         }
     }

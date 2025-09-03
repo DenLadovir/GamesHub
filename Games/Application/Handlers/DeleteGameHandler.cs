@@ -1,4 +1,5 @@
-﻿using Games.Database;
+﻿using Games.Constants;
+using Games.Database;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,7 +19,7 @@ public class DeleteGameHandler : IRequestHandler<DeleteGameCommand, bool>
         var game = await _db.Games.FirstOrDefaultAsync(g => g.Id == request.Id, cancellationToken);
         if (game == null)
         {
-            _logger.LogWarning($"Игра с ID {request.Id} не найдена");
+            _logger.LogWarning(Messages.LogWarningString, request.Id);
             return false;
         }
 
