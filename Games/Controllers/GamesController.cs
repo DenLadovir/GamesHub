@@ -1,4 +1,5 @@
 ﻿using Games.Application.Queries;
+using Games.Constants;
 using Games.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -117,5 +118,11 @@ public class GamesController : Controller
     {
         var result = await _mediator.Send(new FilterGamesQuery(filter));
         return View(result);
+    }
+
+    [HttpGet("TestError")]
+    public IActionResult TestError()
+    {
+        throw new Exception(Messages.TestError);
     }
 }

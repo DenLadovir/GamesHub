@@ -29,5 +29,8 @@ namespace Games.Constants
         public const string ValueCannotBeNull = "Значение не может быть null.";
         public const string InvalidDataTypeStringExpected = "Некорректный тип данных. Ожидается строка.";
         public const string StringLengthRange = "Длина должна быть от {0} до {1} символов.";
+
+        public const string UnexpectedError = "Произошла непредвиденная ошибка.";
+        public const string TestError = "Тестовая ошибка из GamesController";
     }
 }
