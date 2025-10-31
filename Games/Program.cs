@@ -20,6 +20,9 @@ public class MainClass
         builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSQLConnection")));
 
+        builder.Services.AddDbContextPool<AppDbContext>(options =>
+            options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
         builder.Services.AddDefaultIdentity<IdentityUser>(options =>
             options.SignIn.RequireConfirmedAccount = false)
             .AddRoles<IdentityRole>()
